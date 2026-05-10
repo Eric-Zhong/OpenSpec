@@ -1,0 +1,98 @@
+name: event-driven
+version: 1
+description: 事件驱动工作流，从需求发现到 AsyncAPI 优先的实施规划
+artifacts:
+  - id: event-storming
+    generates: event-storming.md
+    description: 协作发现领域事件、命令、参与者和边界
+    template: event-storming.md
+    instruction: |
+      记录事件风暴的成果，为下游产物奠定基础。
+
+      关注领域：
+      - 领域事件（过去时态的业务事实）
+      - 触发行为的命令
+      - 参与者和外部系统
+      - 聚合或限界上下文
+      - 串联命令和事件的自动化/策略
+      - 热点、模糊点和待解决问题
+
+      保持此产物的协作性和探索性。它是事件建模、规范、设计和 AsyncAPI 撰写的输入。
+    requires: []
+
+  - id: event-modeling
+    generates: event-modeling.md
+    description: 从触发器到读取模型的事件建模流程
+    template: event-modeling.md
+    instruction: |
+      将事件风暴输出转化为结构化的事件流。
+
+      按以下顺序使用泳道：
+      触发器 -> 命令 -> 事件 -> 读取模型
+
+      添加 Mermaid 图表以可视化交互和时间线流程。此产物应使依赖关系和消息流显式化，确保后续的规范、设计和 AsyncAPI 工作与发现的行为保持一致。
+    requires:
+      - event-storming
+
+  - id: specs
+    generates: specs/**/*.md
+    description: 带有可测试验收标准的用户故事规范
+    template: specs/spec.md
+    instruction: |
+      基于发现/建模产物撰写用户故事规范。
+
+      要求：
+      - 使用用户故事格式：作为<角色>，我想要<能力>，以便<收益>。
+      - 每个故事使用 Given/When/Then 验收标准。
+      - 确保每个故事可追溯至事件风暴和事件建模的输出。
+    requires:
+      - event-modeling
+
+  - id: design
+    generates: design.md
+    description: AsyncAPI 撰写前的技术设计决策
+    template: design.md
+    instruction: |
+      在编写 AsyncAPI 之前，记录实施层面的架构决策。
+
+      包括消息代理/运行时选择、主题命名规范、负载/Schema 格式、安全控制和运维关注点。将决策关联回规范和事件建模流程。
+    requires:
+      - specs
+
+  - id: asyncapi
+    generates: asyncapi.yaml
+    description: 基于先前产物的 AsyncAPI 技术规格
+    template: asyncapi.yaml
+    instruction: |
+      基于事件风暴、事件建模、规范和设计撰写 AsyncAPI。
+
+      完成指南：
+      - `asyncapi.yaml` 在验证成功前不算完成。
+      - 运行 `asyncapi-cli validate asyncapi.yaml`。
+      - 如果验证失败，在标记此产物完成前解决错误。
+    requires:
+      - design
+
+  - id: tasks
+    generates: tasks.md
+    description: AsyncAPI 验证后创建的实施检查清单
+    template: tasks.md
+    instruction: |
+      仅在上游产物完成后规划实施。
+
+      前置条件：
+      - 规范已通过审查。
+      - 设计已通过审查。
+      - AsyncAPI 已通过 `asyncapi-cli validate asyncapi.yaml` 验证。
+
+      将工作拆分为小型的、按依赖排序的复选框任务。
+    requires:
+      - asyncapi
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    读取上下文文件，逐步处理待办任务，完成后逐项标记。
+    如果遇到阻碍或需要澄清，暂停工作。

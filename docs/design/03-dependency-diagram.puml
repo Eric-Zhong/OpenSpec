@@ -1,0 +1,32 @@
+# 03-dependency-diagram.puml
+
+@startuml
+package "Core Module" {
+    [CLI] --> [CommandParser]
+    [CLI] --> [CommandRegistry]
+    [CLI] --> [UtilityServices]
+}
+
+package "Subcommand Modules" {
+    [init] --> [CommandHandler]
+    [list] --> [CommandHandler]
+    [view] --> [CommandHandler]
+    [change] --> [CommandHandler]
+    [validate] --> [CommandHandler]
+    [archive] --> [CommandHandler]
+    [feedback] --> [CommandHandler]
+}
+
+package "Utility Modules" {
+    [FileOperations] --> [CLI]
+    [ConfigManagement] --> [CLI]
+    [OutputFormatting] --> [CLI]
+}
+
+package "Telemetry Module" {
+    [Telemetry] --> [CLI]
+    [Telemetry] --> [CommandParser]
+    [Telemetry] --> [CommandRegistry]
+}
+
+@enduml
